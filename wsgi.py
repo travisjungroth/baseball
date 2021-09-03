@@ -12,7 +12,7 @@ cache = {}
 @app.route("/")
 def index():
     cached = cache.get('index')
-    if cached is None or datetime.utcnow() - cache[1] > timedelta(minutes=5):
+    if cached is None or datetime.utcnow() - cached[1] > timedelta(minutes=5):
         cache['index'] = g()
         cached = cache['index']
     return cached[0]
