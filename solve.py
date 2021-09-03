@@ -4,7 +4,7 @@ from functools import cache, reduce
 from itertools import chain
 from operator import gt, ge, or_
 
-from z3 import Array, IntSort, Store, ArrayRef, AstRef, And, Or, Not, Int, sat, simplify, AtMost
+from z3 import Array, IntSort, Store, ArrayRef, AstRef, And, Or, Not, Int, sat, AtMost
 
 from classes import Team
 from data import matchups, recorded_wins
@@ -16,13 +16,6 @@ total_wins = {team: p + recorded_wins[team] for team, p in pw.items()}
 wins = Array('a', IntSort(), IntSort())
 for team in Team.teams:
     wins = Store(wins, team.id_, total_wins[team])
-
-
-def simp(f):
-    def inner(*args, **kwargs):
-        return simplify(f(*args, **kwargs), local_ctx=True)
-
-    return inner
 
 
 @dataclass(frozen=True)
@@ -66,7 +59,6 @@ class LeagueStandings(GroupStandings):
     def teams_divisions(self):
         return tuple((other_team, self.divisions[(other_team % 15) // 5]) for other_team in self.teams)
 
-    @simp
     def _place_first_wildcard(self, team, op):
         rules = []
         for division in self.divisions:
@@ -92,7 +84,6 @@ class LeagueStandings(GroupStandings):
     def tie_first_wildcard(self, team):
         return And(self.win_or_tie_first_wildcard(team), Not(self.win_first_wildcard(team)))
 
-    @simp
     def _place_second_wildcard(self, team, op):
         rules = []
         for division in self.divisions:
