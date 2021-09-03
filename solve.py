@@ -162,5 +162,5 @@ def g():
         rows.append(row)
 
     table = '<table>' + '\n'.join(rows) + '</table>'
-    rest = f'<p>Updated {datetime.utcnow()} UTC</p>'
+    rest = f'<p>Updated {datetime.utcnow()} UTC</p><p><a href="https://github.com/travisjungroth/baseball-elimination">https://github.com/travisjungroth/baseball-elimination</a></p>'
     return table + rest, datetime.utcnow()
