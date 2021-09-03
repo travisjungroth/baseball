@@ -130,11 +130,8 @@ def f(solver, groups, methods):
             team = Int(title)
             solver.add(group.in_group(team))
             solver.add(method(group, team))
-            # solver.add(team == 27)
             while solver.check() == sat:
                 m = solver.model()
-                # for i in range(25, 30):
-                #     print(i, m.eval(wins[i]))
                 w = m[team].as_long()
                 teams.add(w)
                 solver.add(team != w)
