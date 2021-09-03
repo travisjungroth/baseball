@@ -150,28 +150,29 @@ league_names = ['AL', 'NL']
 leagues = [LeagueStandings(name, wins, teams[15 * i:15 * i + 15], divisions[i * 3: i * 3 + 3])
            for i, name in enumerate(league_names)]
 
-d = {}
-for m, ts in f(s, divisions, [
-    DivisionStandings.win_division,
-    DivisionStandings.tie_division,
-]):
-    d.setdefault(m, set()).update(ts)
-for m, ts in f(s, leagues, [
-    LeagueStandings.win_first_wildcard,
-    LeagueStandings.tie_first_wildcard,
-    LeagueStandings.win_second_wildcard,
-    LeagueStandings.tie_second_wildcard,
-]):
-    d.setdefault(m, set()).update(ts)
 
-d['make_postseason'] = tuple(reduce(or_, chain(d.values())))
+def g():
+    d = {}
+    for m, ts in f(s, divisions, [
+        DivisionStandings.win_division,
+        DivisionStandings.tie_division,
+    ]):
+        d.setdefault(m, set()).update(ts)
+    for m, ts in f(s, leagues, [
+        LeagueStandings.win_first_wildcard,
+        LeagueStandings.tie_first_wildcard,
+        LeagueStandings.win_second_wildcard,
+        LeagueStandings.tie_second_wildcard,
+    ]):
+        d.setdefault(m, set()).update(ts)
 
-rows = ['<tr><td></td>' + ''.join([f'<td>{Team.teams[n]}</td>' for n in range(30)]) + '</tr>']
-for title, vale in d.items():
-    row = f'<tr><td>{title}</td>' + ''.join([f'<td>{"O" if n in vale else "X"}</td>' for n in range(30)]) + '</tr>'
-    rows.append(row)
+    d['make_postseason'] = tuple(reduce(or_, chain(d.values())))
 
-table = '<table>' + '\n'.join(rows) + '</table>'
-rest = f'<p>Updated {datetime.utcnow()} UTC</p>'
-with open('index.html', 'w+') as f:
-    f.write(table + rest)
+    rows = ['<tr><td></td>' + ''.join([f'<td>{Team.teams[n]}</td>' for n in range(30)]) + '</tr>']
+    for title, vale in d.items():
+        row = f'<tr><td>{title}</td>' + ''.join([f'<td>{"O" if n in vale else "X"}</td>' for n in range(30)]) + '</tr>'
+        rows.append(row)
+
+    table = '<table>' + '\n'.join(rows) + '</table>'
+    rest = f'<p>Updated {datetime.utcnow()} UTC</p>'
+    return table + rest, datetime.utcnow()
