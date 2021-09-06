@@ -4,7 +4,7 @@ from functools import cache, reduce
 from itertools import chain
 from operator import gt, ge, or_
 
-from z3 import Array, IntSort, Store, ArrayRef, AstRef, And, Or, Not, Int, sat, AtMost
+from z3 import Array, IntSort, Store, ArrayRef, AstRef, And, Or, Not, Int, sat, AtMost, Implies
 
 from classes import Team
 from data import matchups, recorded_wins
@@ -111,6 +111,16 @@ class LeagueStandings(GroupStandings):
     def tie_second_wildcard(self, team):
         return And(self.win_or_tie_second_wildcard(team), Not(self.win_second_wildcard(team)))
 
+    @cache
+    def miss_postseason(self, team):
+        rules = [Not(self.win_or_tie_second_wildcard(team)), Not(self.win_or_tie_first_wildcard(team))]
+        for division in self.divisions:
+            rules.append(Implies(
+                division.in_group(team),
+                Not(division.win_or_tie_division(team)),
+            ))
+        return And(rules)
+
 
 def f(solver, groups, methods):
     for group in groups:
@@ -155,6 +165,9 @@ def g():
         d.setdefault(m, set()).update(ts)
 
     d['make_postseason'] = tuple(reduce(or_, chain(d.values())))
+    for m, ts in f(s, leagues, [LeagueStandings.miss_postseason]):
+        d.setdefault(m, set()).update(ts)
+    print(d['miss_postseason'])
 
     rows = ['<tr><td></td>' + ''.join([f'<td>{Team.teams[n]}</td>' for n in range(30)]) + '</tr>']
     for title, vale in d.items():
